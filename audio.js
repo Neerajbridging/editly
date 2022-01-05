@@ -170,7 +170,12 @@ module.exports = ({ ffmpegPath, ffprobePath, enableFfmpegLog, verbose, tmpDir })
       const cutToArg = (cutTo != null ? `:end=${cutTo}` : '');
       const apadArg = i > 0 ? ',apad' : ''; // Don't pad the first track (audio from video clips with correct duration)
 
-      return `[${i}]atrim=start=${cutFrom || 0}${cutToArg},adelay=delays=${Math.floor((start || 0) * 1000)}:all=1${apadArg}[a${i}]`;
+      if (process.platform === 'linux') {
+        return `[${i}]atrim=start=${cutFrom || 0}${cutToArg},adelay=0|0|0${apadArg}[a${i}]`; // Neeraj Pathania we changed this adelay parameter for linux working
+      }
+      else{
+        return `[${i}]atrim=start=${cutFrom || 0}${cutToArg},adelay=delays=${Math.floor((start || 0) * 1000)}:all=1${apadArg}[a${i}]`;
+      }
     }).join(';');
 
     const volumeArg = outputVolume != null ? `,volume=${outputVolume}` : '';
